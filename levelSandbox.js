@@ -6,20 +6,20 @@ const level = require('level');
 const chainDB = './chaindata';
 const db = level(chainDB);
 
-// Add data to levelDB with key/value pair
-function addLevelDBData(key,value){
-  db.put(key, value, function(err) {
+// // Add data to levelDB with key/value pair
+function addLevelDBdata(key,value){
+  db.put(key, JSON.stringify(value), function(err) {
     if (err) return console.log('Block ' + key + ' submission failed', err);
   })
 }
 
-// Get data from levelDB with key
-function getLevelDBData(key){
-  db.get(key, function(err, value) {
-    if (err) return console.log('Not found!', err);
-    console.log('Value = ' + value);
-  })
+// get data from levelDB with key
+async function getLevelDBdata(key) {
+    let blockString = await db.get(key);
+    let block = await JSON.parse(blockString);
+    return block;
 }
+
 
 // Add data to levelDB with value
 function addDataToLevelDB(value) {
@@ -30,8 +30,35 @@ function addDataToLevelDB(value) {
             return console.log('Unable to read data stream!', err)
         }).on('close', function() {
           console.log('Block #' + i);
-          addLevelDBData(i, value);
+          addLevelDBdata(i, value);
         });
+}
+
+async function getBlockHeight() {
+    let height = await getChainHeight();
+    return height;
+}
+
+function getChainHeight() {
+    return new Promise((resolve, reject) => {
+        let i = 0;
+        db.createReadStream().on("data", function(data) {
+            i++;
+        }).on("error", function(err) {
+            reject("Unable to read data stream!");
+        }).on("end", function() {
+            resolve(i);
+        });
+    })
+
+}
+
+module.exports = {
+    addLevelDBdata,
+    addDataToLevelDB,
+    getLevelDBdata,
+    getChainHeight,
+    getBlockHeight,
 }
 
 /* ===== Testing ==============================================================|
@@ -44,11 +71,3 @@ function addDataToLevelDB(value) {
 |    Bitcoin blockchain adds 8640 blocks per day                               |
 |     ( new block every 10 minutes )                                           |
 |  ===========================================================================*/
-
-
-(function theLoop (i) {
-  setTimeout(function () {
-    addDataToLevelDB('Testing data');
-    if (--i) theLoop(i);
-  }, 100);
-})(10);
