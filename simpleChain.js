@@ -104,7 +104,10 @@ class Blockchain{
       }
     }
 }
-
+module.exports = {
+  Blockchain,
+  Block
+}
 // // main function
 async function main() {
   let blockchain = new Blockchain();
@@ -115,7 +118,7 @@ async function main() {
   blockchain.validateChain();
 }
 
-main();
+// main();
 // let inducedErrorBlocks = [2,4,7];
 // for (var i = 0; i < inducedErrorBlocks.length; i++) {
 //   blockchain.chain[inducedErrorBlocks[i]].data='induced chain error';
