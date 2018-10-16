@@ -38,18 +38,19 @@ class Blockchain{
     // Block height
     let height = await level.getBlockHeight();
     console.log("Current block height: " + height);
-    newBlock.height = height + 1;
+    newBlock.height = height;
     // UTC timestamp
     newBlock.time = new Date().getTime().toString().slice(0,-3);
     // previous block hash
     if(height > 0){
-      newBlock.previousBlockHash = await level.getLevelDBdata(height - 1).hash;
+      let previousBlock = await level.getLevelDBdata(height - 1);
+      newBlock.previousBlockHash = previousBlock.hash;
     }
     // Block hash with SHA256 using newBlock and converting to a string
     newBlock.hash = SHA256(JSON.stringify(newBlock)).toString();
     // Adding block object to chain
     console.log(newBlock);
-    level.addDataToLevelDB(newBlock);
+    await level.addDataToLevelDB(newBlock);
   }
 
   // Get block height
